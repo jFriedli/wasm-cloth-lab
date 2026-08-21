@@ -1,19 +1,21 @@
 import init, { Simulation } from "./wasm/cloth_wasm.js";
+import { FRESH_DEFAULTS, qualityMesh, QualityPreset } from "./defaults";
 import { mapMotion, MotionEstimator, relativeWind } from "./motion";
 import { Renderer } from "./renderer";
 import "./style.css";
 
-const qualities = [{ w: 30, h: 20 }, { w: 50, h: 32 }, { w: 75, h: 48 }, { w: 100, h: 64 }];
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const canvas = el<HTMLCanvasElement>("scene"), panel = el("panel"), metrics = el<HTMLPreElement>("metrics"), error = el("error");
 const settings = el<HTMLButtonElement>("settings"), material = el<HTMLSelectElement>("material"), quality = el<HTMLSelectElement>("quality"), attachment = el<HTMLSelectElement>("attachment"), wind = el<HTMLInputElement>("wind"), motion = el<HTMLInputElement>("motion"), inertia = el<HTMLInputElement>("inertia");
 const windowWindGain = 0.016, windowInertiaGain = 0.005;
+quality.value = String(FRESH_DEFAULTS.quality);
+attachment.value = String(FRESH_DEFAULTS.attachment);
 settings.onclick = () => { const open = panel.classList.toggle("open"); settings.setAttribute("aria-expanded", String(open)); };
 
 async function boot() {
   const wasm = await init(); const renderer = new Renderer(canvas); const estimator = new MotionEstimator();
-  let sim: Simulation, q = qualities[1], paused = false, debug = false, gust = 0, last = performance.now(), acc = 0, frames = 0, fps = 0, fpsAt = last, physicsMs = 0;
-  const create = () => { q = qualities[Number(quality.value)]; sim = new Simulation(q.w, q.h, Number(material.value)); sim.set_attachment(Number(attachment.value)); const mem = wasm.memory.buffer; renderer.setMesh(new Float32Array(mem, sim.positions_ptr(), sim.vertex_count() * 3), new Float32Array(mem, sim.normals_ptr(), sim.vertex_count() * 3), new Uint32Array(mem, sim.indices_ptr(), sim.index_count()), q.w, q.h); };
+  let sim: Simulation, q = qualityMesh(FRESH_DEFAULTS.quality), paused = false, debug = false, gust = 0, last = performance.now(), acc = 0, frames = 0, fps = 0, fpsAt = last, physicsMs = 0;
+  const create = () => { q = qualityMesh(Number(quality.value) as QualityPreset); sim = new Simulation(q.w, q.h, Number(material.value)); sim.set_attachment(Number(attachment.value)); const mem = wasm.memory.buffer; renderer.setMesh(new Float32Array(mem, sim.positions_ptr(), sim.vertex_count() * 3), new Float32Array(mem, sim.normals_ptr(), sim.vertex_count() * 3), new Uint32Array(mem, sim.indices_ptr(), sim.index_count()), q.w, q.h); };
   create();
   const worldAt = (e: PointerEvent) => { const halfY = 2.7, aspect = canvas.clientWidth / canvas.clientHeight; return { x: ((e.clientX / canvas.clientWidth) * 2 - 1) * halfY * aspect + 1.25, y: (1 - (e.clientY / canvas.clientHeight) * 2) * halfY }; };
   let grabbing = false;
