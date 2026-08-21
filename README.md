@@ -32,7 +32,7 @@ flowchart LR
 
 ## Controls
 
-Use **TUNE** for material, quality, attachment, wind, responsiveness, and image selection. `R` resets, `Space` pauses, `F` creates a gust, `D` shows metrics, and `1`–`4` select quality. Browser-window motion works best in a restored desktop window; ambient wind and gusts remain useful when maximized or on mobile.
+Use **TUNE** for material, quality, attachment, ambient wind, separate window-wind/window-inertia responsiveness, and image selection. `R` resets, `Space` pauses, `F` creates a gust, `D` shows metrics, and `1`–`4` select quality. Browser-window motion works best in a restored desktop window; ambient wind and gusts remain useful when maximized or on mobile.
 
 ## Development
 
@@ -52,7 +52,7 @@ cargo fmt --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 cd web && npm test && npm run lint && npm run typecheck
-VITE_BASE=/labs/cloth/ npm run build
+VITE_BASE=/labs/cloth-simulation/ npm run build
 ```
 
 GitHub Pages is built and deployed by Actions with `VITE_BASE=/wasm-cloth-lab/`. See [architecture](docs/ARCHITECTURE.md), [physics](docs/PHYSICS.md), [browser motion](docs/WINDOW_MOTION.md), and the [manual acceptance procedure](docs/ACCEPTANCE.md).

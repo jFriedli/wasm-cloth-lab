@@ -2,7 +2,8 @@
 <div class="control"><label for="quality">Quality</label><select id="quality"><option value="0">Low · 30 × 20</option><option value="1" selected>Medium · 50 × 32</option><option value="2">High · 75 × 48</option><option value="3">Ultra · 100 × 64</option></select></div>
 <div class="control"><label for="attachment">Attachment</label><select id="attachment"><option value="0">Full edge</option><option value="1">Two point</option><option value="2">Top edge</option></select></div>
 <div class="control"><label for="wind">Ambient wind <output id="wind-out">2.2</output></label><input id="wind" type="range" min="0" max="8" step=".1" value="2.2"></div>
-<div class="control"><label for="motion">Window response <output id="motion-out">1.0</output></label><input id="motion" type="range" min="0" max="2" step=".05" value="1"></div>
+<div class="control"><label for="motion">Window wind <output id="motion-out">1.0</output></label><input id="motion" type="range" min="0" max="2" step=".05" value="1"></div>
+<div class="control"><label for="inertia">Window inertia <output id="inertia-out">1.0</output></label><input id="inertia" type="range" min="0" max="2" step=".05" value="1"></div>
 <div class="actions"><button id="reset">Reset cloth <kbd>R</kbd></button><button id="gust">Gust <kbd>F</kbd></button><button id="debug">Debug <kbd>D</kbd></button></div>
 <hr><label class="upload">Choose flag image<input id="image" type="file" accept="image/*"></label><small>Images stay in your browser and are never uploaded.</small>
 </aside><pre id="metrics" hidden></pre><div id="error" role="alert" hidden></div><script type="module" src="/src/main.ts"></script></body></html>

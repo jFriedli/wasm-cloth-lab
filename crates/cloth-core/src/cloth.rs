@@ -377,6 +377,23 @@ mod tests {
         assert_eq!(a.positions(), b.positions())
     }
     #[test]
+    fn extreme_alternating_window_input_stays_finite_and_attached() {
+        let mut c = cloth();
+        let pinned = c.positions()[..3].to_vec();
+        for frame in 0..720 {
+            let sign = if (frame / 12) % 2 == 0 { 1. } else { -1. };
+            c.step(
+                1. / 120.,
+                Vec3::new(0., -9.81, 0.),
+                Vec3::new(52. * sign, 0., 3.),
+                Vec3::new(57. * sign, 0., 0.),
+            );
+        }
+        assert!(c.positions().iter().all(|value| value.is_finite()));
+        assert_eq!(&c.positions()[..3], pinned.as_slice());
+        assert!(c.max_edge_error() < 0.35);
+    }
+    #[test]
     fn material_properties() {
         let s = Material::preset(crate::MaterialKind::Silk);
         let c = Material::preset(crate::MaterialKind::Canvas);
