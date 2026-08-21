@@ -6,8 +6,8 @@ Grab the browser window and move it. Window velocity generates relative airflow 
 
 ## Features
 
-- XPBD-style structural, shear, and long-range bending constraints in Rust
-- Triangle-normal aerodynamic pressure plus light tangential skin drag
+- Serial compliant structural, shear, and long-range bending constraints in Rust
+- Surface-relative triangle aerodynamic pressure plus light tangential skin drag
 - Separately filtered browser velocity and acceleration responses
 - Fixed 120 Hz simulation with capped catch-up work
 - WebGL2 textured, lit, double-sided mesh with normals computed in WASM
@@ -25,10 +25,12 @@ flowchart LR
   Screen[screenX / screenY] --> Filter[TypeScript motion estimator]
   Filter -->|velocity: relative airflow| WASM
   Filter -->|acceleration: inertial force| WASM
-  Input[UI / ambient wind / gust] --> WASM[Rust WASM XPBD solver]
+  Input[UI / ambient wind / gust] --> WASM[Rust WASM compliant cloth solver]
   WASM -->|packed positions + normals| GL[WebGL2 renderer]
   Local[Local image] -->|browser decode only| GL
 ```
+
+The 2026 solver research, reproducible ablations, literature bibliography, and production decision are documented in [`docs/research/`](docs/research/DECISION.md).
 
 ## Controls
 
