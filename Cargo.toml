@@ -1,0 +1,15 @@
+[workspace]
+members = ["crates/cloth-core", "crates/cloth-wasm"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/jFriedli/wasm-cloth-lab"
+
+[profile.release]
+lto = true
+opt-level = "s"
+codegen-units = 1
+
