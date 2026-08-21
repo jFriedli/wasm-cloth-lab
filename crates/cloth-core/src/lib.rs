@@ -1,7 +1,9 @@
 mod cloth;
 mod material;
 mod math;
-pub use cloth::{Attachment, Cloth, ClothMetrics, ConstraintKind};
+pub use cloth::{
+    AerodynamicsMode, Attachment, BendingMode, Cloth, ClothMetrics, ConstraintKind, SolverConfig, SolverMode,
+};
 pub use material::{Material, MaterialKind};
 pub use math::Vec3;
 

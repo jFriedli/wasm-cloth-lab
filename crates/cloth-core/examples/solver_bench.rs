@@ -1,4 +1,4 @@
-use cloth_core::{Attachment, Cloth, ClothMetrics, Material, MaterialKind, Vec3};
+use cloth_core::{Attachment, Cloth, ClothMetrics, Material, MaterialKind, SolverConfig, Vec3};
 use std::{hint::black_box, time::Instant};
 
 #[derive(Clone, Copy)]
@@ -55,12 +55,20 @@ fn percentile(samples: &mut [f64], p: f64) -> f64 {
     samples[((samples.len() - 1) as f64 * p).round() as usize]
 }
 
-fn run(name: &str, w: usize, h: usize, scene: Scene, material: MaterialKind) {
+fn run(
+    solver: &str,
+    config: SolverConfig,
+    name: &str,
+    w: usize,
+    h: usize,
+    scene: Scene,
+    material: MaterialKind,
+) {
     let dt = 1. / 120.;
     let mut cloth = Cloth::new(w, h, Material::preset(material), Attachment::TopEdge);
     for frame in 0..60 {
         let (g, wind, inertia) = inputs(scene, frame);
-        cloth.step(dt, g, wind, inertia);
+        cloth.step_with_config(dt, g, wind, inertia, config);
     }
     let mut timings = Vec::with_capacity(360);
     let mut max_strain = 0_f32;
@@ -68,7 +76,7 @@ fn run(name: &str, w: usize, h: usize, scene: Scene, material: MaterialKind) {
     for frame in 60..420 {
         let (g, wind, inertia) = inputs(scene, frame);
         let start = Instant::now();
-        cloth.step(dt, g, wind, inertia);
+        cloth.step_with_config(dt, g, wind, inertia, config);
         timings.push(start.elapsed().as_secs_f64() * 1000.);
         final_metrics = cloth.metrics(dt);
         max_strain = max_strain.max(final_metrics.max_structural_strain);
@@ -79,7 +87,7 @@ fn run(name: &str, w: usize, h: usize, scene: Scene, material: MaterialKind) {
     let p95 = percentile(&mut timings.clone(), 0.95);
     let p99 = percentile(&mut timings, 0.99);
     println!(
-        "{name},{w}x{h},{},{mean:.6},{median:.6},{p95:.6},{p99:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.3},{}",
+        "{solver},{name},{w}x{h},{},{mean:.6},{median:.6},{p95:.6},{p99:.6},{:.6},{:.6},{:.6},{:.6},{:.6},{:.3},{}",
         w * h,
         max_strain,
         final_metrics.rms_structural_strain,
@@ -93,18 +101,118 @@ fn run(name: &str, w: usize, h: usize, scene: Scene, material: MaterialKind) {
 
 fn main() {
     println!(
-        "scene,mesh,vertices,mean_ms,median_ms,p95_ms,p99_ms,max_structural_strain,final_rms_structural,final_rms_shear,final_rms_bend,final_energy,max_velocity,estimated_bytes"
+        "solver,scene,mesh,vertices,mean_ms,median_ms,p95_ms,p99_ms,max_structural_strain,final_rms_structural,final_rms_shear,final_rms_bend,final_energy,max_velocity,estimated_bytes"
     );
-    run("B1_hanging", 50, 32, Scene::Hanging, MaterialKind::Cotton);
-    run("B2_wind5", 50, 32, Scene::Wind5, MaterialKind::Cotton);
-    run("B2_wind10", 50, 32, Scene::Wind10, MaterialKind::Cotton);
-    run("B3_gust", 50, 32, Scene::Gust, MaterialKind::Cotton);
-    run("B4_shake", 50, 32, Scene::Shake, MaterialKind::Cotton);
-    run("B5_violent", 50, 32, Scene::Violent, MaterialKind::Cotton);
-    for (w, h) in [(30, 20), (50, 32), (75, 48), (100, 64)] {
-        run("B6_scaling", w, h, Scene::Shake, MaterialKind::Cotton);
+    let solvers = [
+        ("baseline_1x7", SolverConfig::baseline(7)),
+        ("xpbd_1x7", SolverConfig::xpbd(7)),
+        ("small_7x1", SolverConfig::small_steps(7)),
+        ("hybrid_2x4", SolverConfig::hybrid(2, 4)),
+        (
+            "baseline_rel_air",
+            SolverConfig::baseline(7).with_relative_aerodynamics(),
+        ),
+        (
+            "hybrid_rel_air",
+            SolverConfig::hybrid(2, 4).with_relative_aerodynamics(),
+        ),
+        (
+            "baseline_isometric",
+            SolverConfig::baseline(7).with_isometric_bending(),
+        ),
+    ];
+    for (solver, config) in solvers {
+        run(
+            solver,
+            config,
+            "B1_hanging",
+            50,
+            32,
+            Scene::Hanging,
+            MaterialKind::Cotton,
+        );
+        run(
+            solver,
+            config,
+            "B2_wind5",
+            50,
+            32,
+            Scene::Wind5,
+            MaterialKind::Cotton,
+        );
+        run(
+            solver,
+            config,
+            "B2_wind10",
+            50,
+            32,
+            Scene::Wind10,
+            MaterialKind::Cotton,
+        );
+        run(
+            solver,
+            config,
+            "B3_gust",
+            50,
+            32,
+            Scene::Gust,
+            MaterialKind::Cotton,
+        );
+        run(
+            solver,
+            config,
+            "B4_shake",
+            50,
+            32,
+            Scene::Shake,
+            MaterialKind::Cotton,
+        );
+        run(
+            solver,
+            config,
+            "B5_violent",
+            50,
+            32,
+            Scene::Violent,
+            MaterialKind::Cotton,
+        );
+        for (w, h) in [(30, 20), (50, 32), (75, 48), (100, 64)] {
+            run(
+                solver,
+                config,
+                "B6_scaling",
+                w,
+                h,
+                Scene::Shake,
+                MaterialKind::Cotton,
+            );
+        }
+        run(
+            solver,
+            config,
+            "B7_bend_silk",
+            50,
+            32,
+            Scene::Gust,
+            MaterialKind::Silk,
+        );
+        run(
+            solver,
+            config,
+            "B7_bend_canvas",
+            50,
+            32,
+            Scene::Gust,
+            MaterialKind::Canvas,
+        );
+        run(
+            solver,
+            config,
+            "B8_nylon",
+            50,
+            32,
+            Scene::Wind10,
+            MaterialKind::Nylon,
+        );
     }
-    run("B7_bend_silk", 50, 32, Scene::Gust, MaterialKind::Silk);
-    run("B7_bend_canvas", 50, 32, Scene::Gust, MaterialKind::Canvas);
-    run("B8_nylon", 50, 32, Scene::Wind10, MaterialKind::Nylon);
 }
