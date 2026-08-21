@@ -1,7 +1,7 @@
 mod cloth;
 mod material;
 mod math;
-pub use cloth::{Attachment, Cloth, ConstraintKind};
+pub use cloth::{Attachment, Cloth, ClothMetrics, ConstraintKind};
 pub use material::{Material, MaterialKind};
 pub use math::Vec3;
 

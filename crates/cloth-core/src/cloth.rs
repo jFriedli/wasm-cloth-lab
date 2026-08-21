@@ -12,6 +12,17 @@ pub enum ConstraintKind {
     Shear,
     Bend,
 }
+#[derive(Clone, Copy, Debug, Default)]
+pub struct ClothMetrics {
+    pub max_structural_strain: f32,
+    pub rms_structural_strain: f32,
+    pub rms_shear_strain: f32,
+    pub rms_bend_error: f32,
+    pub pinned_error: f32,
+    pub kinetic_energy: f32,
+    pub center_of_mass: Vec3,
+    pub max_velocity: f32,
+}
 #[derive(Clone, Copy, Debug)]
 struct Constraint {
     a: usize,
@@ -311,6 +322,60 @@ impl Cloth {
             .filter(|c| c.kind == ConstraintKind::Structural)
             .map(|c| ((self.particles[c.a].p - self.particles[c.b].p).len() - c.rest).abs() / c.rest)
             .fold(0., f32::max)
+    }
+    pub fn metrics(&self, dt: f32) -> ClothMetrics {
+        let mut result = ClothMetrics::default();
+        let mut structural_sq = 0.;
+        let mut shear_sq = 0.;
+        let mut bend_sq = 0.;
+        let mut structural_n = 0;
+        let mut shear_n = 0;
+        let mut bend_n = 0;
+        for c in &self.constraints {
+            let strain = ((self.particles[c.a].p - self.particles[c.b].p).len() - c.rest) / c.rest;
+            match c.kind {
+                ConstraintKind::Structural => {
+                    result.max_structural_strain = result.max_structural_strain.max(strain.abs());
+                    structural_sq += strain * strain;
+                    structural_n += 1;
+                }
+                ConstraintKind::Shear => {
+                    shear_sq += strain * strain;
+                    shear_n += 1;
+                }
+                ConstraintKind::Bend => {
+                    bend_sq += strain * strain;
+                    bend_n += 1;
+                }
+            }
+        }
+        result.rms_structural_strain = (structural_sq / structural_n.max(1) as f32).sqrt();
+        result.rms_shear_strain = (shear_sq / shear_n.max(1) as f32).sqrt();
+        result.rms_bend_error = (bend_sq / bend_n.max(1) as f32).sqrt();
+        let mut movable_mass = 0.;
+        for p in &self.particles {
+            result.center_of_mass += p.p;
+            if p.inv_mass == 0. {
+                result.pinned_error = result.pinned_error.max((p.p - p.pin).len());
+            } else {
+                let mass = 1. / p.inv_mass;
+                let speed = (p.p - p.prev).len() / dt;
+                result.kinetic_energy += 0.5 * mass * speed * speed;
+                result.max_velocity = result.max_velocity.max(speed);
+                movable_mass += mass;
+            }
+        }
+        result.center_of_mass = result.center_of_mass / self.particles.len() as f32;
+        if movable_mass > 0. {
+            result.kinetic_energy /= movable_mass;
+        }
+        result
+    }
+    pub fn estimated_bytes(&self) -> usize {
+        self.particles.capacity() * std::mem::size_of::<Particle>()
+            + self.constraints.capacity() * std::mem::size_of::<Constraint>()
+            + self.indices.capacity() * std::mem::size_of::<u32>()
+            + (self.positions.capacity() + self.normals.capacity()) * std::mem::size_of::<f32>()
     }
 }
 
