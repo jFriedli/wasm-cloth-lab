@@ -2,6 +2,6 @@
 /web/node_modules
 /web/dist
 /web/src/wasm
+/web/*.tsbuildinfo
 *.log
 .DS_Store
-

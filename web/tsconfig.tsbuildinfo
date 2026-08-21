@@ -1,1 +1,0 @@
-{"root":["./src/main.ts","./src/motion.test.ts","./src/motion.ts","./src/renderer.ts","./src/shaders.ts","./src/wasm/cloth_wasm.d.ts","./src/wasm/cloth_wasm_bg.wasm.d.ts"],"version":"5.9.3"}
