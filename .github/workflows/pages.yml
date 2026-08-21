@@ -32,6 +32,7 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      - run: wasm-pack build crates/cloth-wasm --target web --out-dir ../../web/src/wasm
       - run: npm ci
         working-directory: web
       - run: npm run test
@@ -40,7 +41,6 @@ jobs:
         working-directory: web
       - run: npm run typecheck
         working-directory: web
-      - run: wasm-pack build crates/cloth-wasm --target web --out-dir ../../web/src/wasm
       - run: npm run build
         working-directory: web
         env:
