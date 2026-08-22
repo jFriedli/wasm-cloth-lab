@@ -36,3 +36,22 @@ Record browser, browser version, OS/window manager, commit, viewport, quality, a
 32. Check browser console for errors.
 33. Check the repository Actions run.
 34. Check the deployed GitHub Pages version.
+
+## Mobile physical-motion test
+
+1. Open `https://jfriedli.com/labs/cloth-simulation/` directly on a phone.
+2. Tap **TUNE**, then **Enable phone motion** if shown.
+3. Grant motion permission.
+4. Hold the phone in portrait and let the cloth settle.
+5. Move the phone sharply toward visible right; verify the cloth trails left.
+6. Stop sharply; verify overshoot and flutter.
+7. Move left; verify the response reverses.
+8. Shake side to side; verify strong stable flutter with no detached pins or exploding mesh.
+9. Hold still; verify motion decays without persistent jitter.
+10. Rotate to landscape and wait briefly for estimator reset.
+11. Move toward visible right again; verify the cloth still trails toward visible left.
+12. Move gently toward/away from you and assess whether Z billowing is intuitive.
+13. Drag by touch, release, and verify stable recovery.
+14. Open debug mode and verify source, permission, rate, orientation, acceleration, gesture velocity, wind, and inertia update.
+
+Record phone model, OS, browser/version, orientation, direct/fallback acceleration, and subjective noise/latency. Real-device tuning should adjust documented bounded constants, not remove safety limits.

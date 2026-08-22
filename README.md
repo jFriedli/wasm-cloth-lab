@@ -1,6 +1,6 @@
 # WASM Cloth Lab
 
-**A real-time Rust/WebAssembly cloth simulation driven by browser-window motion.**
+**A real-time Rust/WebAssembly cloth simulation driven by physical browser-window and phone motion.**
 
 Grab the browser window and move it. Window velocity generates relative airflow while acceleration adds inertial force to the cloth. The result is a genuine 3D deformable mesh—not a CSS warp—settling in an ambient breeze.
 
@@ -9,6 +9,7 @@ Grab the browser window and move it. Window velocity generates relative airflow 
 - Serial compliant structural, shear, and long-range bending constraints in Rust
 - Surface-relative triangle aerodynamic pressure plus light tangential skin drag
 - Separately filtered browser velocity and acceleration responses
+- Orientation-aware phone acceleration, inertial response, and drift-suppressed gesture wind
 - Fixed 120 Hz simulation with capped catch-up work
 - WebGL2 textured, lit, double-sided mesh with normals computed in WASM
 - Silk, cotton, heavy canvas, nylon, and rubber presets
@@ -25,6 +26,8 @@ flowchart LR
   Screen[screenX / screenY] --> Filter[TypeScript motion estimator]
   Filter -->|velocity: relative airflow| WASM
   Filter -->|acceleration: inertial force| WASM
+  Phone[DeviceMotion sensor] --> Mobile[Mobile gesture estimator]
+  Mobile -->|canonical wind + inertia| WASM
   Input[UI / ambient wind / gust] --> WASM[Rust WASM compliant cloth solver]
   WASM -->|packed positions + normals| GL[WebGL2 renderer]
   Local[Local image] -->|browser decode only| GL
@@ -34,7 +37,7 @@ The 2026 solver research, reproducible ablations, literature bibliography, and p
 
 ## Controls
 
-Use **TUNE** for material, quality, attachment, ambient wind, separate window-wind/window-inertia responsiveness, and image selection. `R` resets, `Space` pauses, `F` creates a gust, `D` shows metrics, and `1`–`4` select quality. Browser-window motion works best in a restored desktop window; ambient wind and gusts remain useful when maximized or on mobile.
+Use **TUNE** for material, quality, attachment, ambient wind, motion-wind/motion-inertia responsiveness, and image selection. On phones, tap **Enable phone motion** when the browser requires permission. `R` resets, `Space` pauses, `F` creates a gust, `D` shows metrics, and `1`–`4` select quality. Browser-window motion works best in a restored desktop window; phone motion, touch, ambient wind, and gusts support mobile use. See [mobile motion architecture and limitations](docs/MOBILE_MOTION.md).
 
 ## Development
 
@@ -61,6 +64,6 @@ GitHub Pages is built and deployed by Actions with `VITE_BASE=/wasm-cloth-lab/`.
 
 ## Browser support and limitations
 
-The app targets current desktop Chrome, Edge, and Firefox with WebGL2. Window-coordinate reporting cadence and availability differ by browser, OS, and window manager; unsupported/stale input decays safely. Safari is intended but not yet manually verified. Self-collision, object collision, tearing, fit/crop image modes, and force-arrow rendering are deferred. See [compatibility](docs/BROWSER_COMPATIBILITY.md). Future website integration keeps this repository independent; see [integration](docs/INTEGRATION.md).
+The app targets current desktop Chrome, Edge, and Firefox with WebGL2 and progressively enhances current mobile browsers with `DeviceMotionEvent`. Window and sensor reporting differ by browser, OS, and hardware; unsupported/stale input decays safely. No physical mobile browser is claimed as tested yet. Self-collision, object collision, tearing, fit/crop image modes, and force-arrow rendering are deferred. See [compatibility](docs/BROWSER_COMPATIBILITY.md). Future website integration keeps this repository independent; see [integration](docs/INTEGRATION.md).
 
 Licensed under MIT.

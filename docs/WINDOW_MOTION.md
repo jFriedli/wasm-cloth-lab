@@ -1,5 +1,7 @@
 # Window motion
 
+This document covers the desktop `screenX`/`screenY` source. Phone sensors use a separate estimator and converge at the canonical wind/inertia interface; see [MOBILE_MOTION.md](MOBILE_MOTION.md). Desktop precision and gains are unchanged by mobile support.
+
 The browser samples `window.screenX` and `window.screenY` on animation frames. Screen coordinates are CSS pixels, so no device-pixel-ratio conversion is applied; DPR and zoom affect canvas backing resolution independently. Negative multi-monitor coordinates are valid.
 
 Two distinct mappings are preserved:
