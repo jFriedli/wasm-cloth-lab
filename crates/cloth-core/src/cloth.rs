@@ -694,6 +694,28 @@ mod tests {
         assert!(c.max_edge_error() < 0.35);
     }
     #[test]
+    fn bounded_mobile_shake_trace_stays_finite_and_attached() {
+        let mut c = Cloth::new(30, 20, Material::default(), Attachment::TopEdge);
+        let pinned = c.positions()[..30 * 3].to_vec();
+        for frame in 0..900 {
+            let phase = frame as f32 * 0.37;
+            let wind = Vec3::new(
+                21. * phase.sin(),
+                5. * (phase * 0.73).cos(),
+                13. * (phase * 1.31).sin(),
+            );
+            let inertia = Vec3::new(
+                25.6 * (phase * 1.7).sin(),
+                18. * phase.cos(),
+                16. * (phase * 0.41).sin(),
+            );
+            c.step(1. / 120., Vec3::new(0., -9.81, 0.), wind, inertia);
+        }
+        assert!(c.positions().iter().all(|value| value.is_finite()));
+        assert_eq!(&c.positions()[..30 * 3], pinned.as_slice());
+        assert!(c.max_edge_error() < 0.4);
+    }
+    #[test]
     fn relative_aerodynamics_vanishes_when_cloth_matches_air_velocity() {
         let mut c = cloth();
         let dt = 1. / 120.;
